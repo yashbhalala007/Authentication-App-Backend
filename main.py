@@ -42,6 +42,40 @@ def register():
             db.users.insert_one({"username":uname, "email":uemail, "password":password})
             return make_response("OK", 200)    
 
+@app.route("/login", methods = ['GET', 'POST'])
+def login():
+    if request.method == 'POST':
+        uemail = request.form["email"]
+        password = request.form["pass"]
+        df = db.users.find_one({"email":uemail,"password":password})
+        if df is not None:
+            session['loggedin'] = True
+            session['uemail'] = df["email"]
+            return make_response("OK", 200)
+        else :
+            flash("User Not Found")
+            return make_response("Failed", 400)
+    if 'loggedin' in session:
+        return make_response("OK", 200)
+    return make_response("Failed", 400)
+
+@app.route('/logout')
+def logout() :
+	session.pop('uemail', None)
+	session.pop('loggedin', None)
+	return make_response("OK", 200)
+
+@app.route('/profile')
+def profile():
+    if 'loggedin' in session:
+        df = db.users.find_one({"email":session['uemail']}) 
+        # df[email]=email of user
+        # df[username]=name of user
+        profileImage = imageStore.get_last_version(session['uemail']).read() # profileImage of user
+        return make_response("OK", 200)
+    return make_response("Failed", 400)
+
+
 @app.route("/")
 def index():
     return render_template('index.html')
