@@ -75,6 +75,21 @@ def profile():
         return make_response("OK", 200)
     return make_response("Failed", 400)
 
+@app.route('/update')
+def update():
+    if 'loggedin' in session:
+        if request.method == 'POST':
+            uname = request.form["[--uname--]"]
+            uemail = request.form["[--email--]"]
+            password = request.form["[--pass--]"]
+            profileImage = request.files["[--image--]"]
+            with open(profileImage, 'rb') as img:
+                content = img.read()
+            imageStore.put(content, filename = uemail)
+            db.users.update_one({"email":session['uemail']},{"$set":{"username":uname, "email":uemail, "password":password}})
+            return make_response("OK", 200)
+    return make_response("Failed", 400)
+
 
 @app.route("/")
 def index():
