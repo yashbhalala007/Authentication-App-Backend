@@ -20,7 +20,7 @@ def updateImage():
         profileImage = request.files["[--image--]"]
         with open(profileImage, 'rb') as img:
             content = img.read()
-        imageStore.put(content, filename = uemail)
+        imageStore.put(content, filename = session['uemail'])
         return make_response("OK", 200)
 
 
