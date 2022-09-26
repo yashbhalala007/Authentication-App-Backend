@@ -1,4 +1,5 @@
 
+from asyncio.windows_events import NULL
 from msilib.schema import Binary
 from flask import Flask, render_template, request, session, flash, redirect, url_for, make_response
 import pymongo
@@ -12,9 +13,11 @@ app.secret_key = 'InternshipProject'
 ca = certifi.where()
 
 #database connection
-client = pymongo.MongoClient("mongodb+srv://assignment1:Assignment@internshipproject.wp4835d.mongodb.net/?retryWrites=true&w=majority", tlsCAFile=ca)
+
+client = pymongo.MongoClient("mongodb+srv://hetansh:h30@cluster0.zj9vapt.mongodb.net/?retryWrites=true&w=majority", tlsCAFile=ca)
 db = client.user
-imageStore = gridfs.GridFS(db)
+
+#imageStore = gridfs.GridFS(db)
 
 @app.route("/updateImage", methods = ['GET', 'POST'])
 def updateImage():
@@ -36,14 +39,14 @@ def register():
         password = request.form["pass"]
         phone = request.form["phone"]
         bio = request.form["bio"]
-        profileImage = request.files["image"]
+        #profileImage = request.files["image"]
         if(len(list(db.users.find({"email":uemail}))) > 0):
             return make_response("Failed", 400)
         else:
-            with open(profileImage, 'rb') as img:
-                content = img.read()
+            #with open(profileImage, 'rb') as img:
+            #    content = img.read()
             #imageStore.put(content, filename = uemail)
-            db.users.insert_one({"username":uname, "email":uemail, "password":password, "phone":phone , "bio":bio, "profileImage":Binary(content)})
+            db.users.insert_one({"username":uname, "email":uemail, "password":password, "phone":phone , "bio":bio})
             return make_response("OK", 200)
     if 'loggedin' in session:
         return make_response("OK", 200)
@@ -51,7 +54,7 @@ def register():
 
 @app.route("/login", methods = ['GET', 'POST'])
 def login():
-    if request.method == 'POST':
+    if request.method == 'POST' and db is not None:
         uemail = request.form["email"]
         password = request.form["pass"]
         df = db.users.find_one({"email":uemail,"password":password})
@@ -63,7 +66,7 @@ def login():
             #flash("User Not Found")
             return make_response("Failed", 400)
     if 'loggedin' in session:
-        return make_response("OK", 200)
+        return make_response(password, 200)
     return make_response("Failed", 400)
 
 @app.route('/logout')
