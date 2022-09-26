@@ -1,11 +1,12 @@
 
 from asyncio.windows_events import NULL
 from msilib.schema import Binary
-from flask import Flask, render_template, request, session, flash, redirect, url_for, make_response
+from flask import Flask, render_template,jsonify, request, session, flash, redirect, url_for, make_response
 import pymongo
 import certifi
 import gridfs
 from tkinter import Grid
+import json
 
 app = Flask(__name__)
 app.secret_key = 'InternshipProject'
@@ -75,15 +76,15 @@ def logout() :
 	session.pop('loggedin', None)
 	return make_response("OK", 200)
 
-@app.route('/profile')
+@app.route('/profile', methods = ['GET'])
 def profile():
-    if 'loggedin' in session:
-        df = db.users.find_one({"email":session['uemail']}) 
+    #if 'loggedin' in session:
+    df = db.users.find_one({"email":session['uemail']},{'_id': 0}) 
         # df[email]=email of user
         # df[username]=name of user
-        profileImage = imageStore.get_last_version(session['uemail']).read() # profileImage of user
-        return make_response("OK", 200)
-    return make_response("Failed", 400)
+        #profileImage = imageStore.get_last_version(session['uemail']).read() # profileImage of user
+    return df
+    #return make_response("Failed", 400)
 
 @app.route('/update', methods = ['GET', 'POST'])
 def update():
