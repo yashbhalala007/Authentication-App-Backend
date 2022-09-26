@@ -1,4 +1,5 @@
 
+from msilib.schema import Binary
 from flask import Flask, render_template, request, session, flash, redirect, url_for, make_response
 import pymongo
 import certifi
@@ -41,8 +42,8 @@ def register():
         else:
             with open(profileImage, 'rb') as img:
                 content = img.read()
-            imageStore.put(content, filename = uemail)
-            db.users.insert_one({"username":uname, "email":uemail, "password":password, "phone":phone , "bio":bio})
+            #imageStore.put(content, filename = uemail)
+            db.users.insert_one({"username":uname, "email":uemail, "password":password, "phone":phone , "bio":bio, "profileImage":Binary(content)})
             return make_response("OK", 200)
     if 'loggedin' in session:
         return make_response("OK", 200)
