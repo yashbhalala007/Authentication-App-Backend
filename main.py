@@ -1,21 +1,14 @@
-from pydrive.drive import GoogleDrive
-from pydrive.auth import GoogleAuth
+
 from asyncio.windows_events import NULL
 from msilib.schema import Binary
 from flask import Flask, render_template,jsonify, request, session, flash, redirect, url_for, make_response
 import pymongo
-from PIL import Image
 import certifi
 import gridfs
-import io
 from tkinter import Grid
 import json
-from flask_cors import CORS
-import matplotlib.pyplot as plt
-
 
 app = Flask(__name__)
-CORS(app)
 app.secret_key = 'InternshipProject'
 
 ca = certifi.where()
@@ -46,14 +39,15 @@ def register():
         uemail = request.form["email"]
         password = request.form["pass"]
         phone = request.form["phone"]
-        
+        bio = request.form["bio"]
+        #profileImage = request.files["image"]
         if(len(list(db.users.find({"email":uemail}))) > 0):
             return make_response("Failed", 400)
         else:
             #with open(profileImage, 'rb') as img:
             #    content = img.read()
             #imageStore.put(content, filename = uemail)
-            db.users.insert_one({"username":uname, "email":uemail, "password":password, "phone":phone})
+            db.users.insert_one({"username":uname, "email":uemail, "password":password, "phone":phone , "bio":bio})
             return make_response("OK", 200)
     if 'loggedin' in session:
         return make_response("OK", 200)
@@ -85,11 +79,7 @@ def logout() :
 @app.route('/profile', methods = ['GET'])
 def profile():
     #if 'loggedin' in session:
-    df = db.users.find_one({"email":"hetansh17@gmail.com"},{'_id': 0,'image':0}) 
-    # pil_img = Image.open(io.BytesIO(df['image']))
-    # plt.imshow(pil_img)
-    # plt.show()
-
+    df = db.users.find_one({"email":session['uemail']},{'_id': 0}) 
         # df[email]=email of user
         # df[username]=name of user
         #profileImage = imageStore.get_last_version(session['uemail']).read() # profileImage of user
@@ -98,25 +88,17 @@ def profile():
 
 @app.route('/update', methods = ['GET', 'POST'])
 def update():
-    if request.method == 'POST':
+    if request.method == 'POST' and 'loggedin' in session:
         uname = request.form["name"]
         uemail = request.form["email"]
         password = request.form["pass"]
         phone = request.form["phone"]
         bio = request.form["bio"]
-        profileImage = request.files["image"]
-        pi = Image.open(profileImage)
-        image_bytes = io.BytesIO()
-        pi.save(image_bytes, format='JPEG')
-
-        image = {
-            'data': image_bytes.getvalue()
-        }
-
+        #profileImage = request.files["[--image--]"]
         #with open(profileImage, 'rb') as img:
             #   content = img.read()
         #imageStore.put(content, filename = uemail)
-        db.users.update_one({"email":uemail},{"$set":{"username":uname, "email":uemail, "password":password,"phone":phone , "bio":bio,"image":image["data"]}})
+        db.users.update_one({"email":uemail},{"$set":{"username":uname, "email":uemail, "password":password,"phone":phone , "bio":bio}})
         return make_response("OK", 200)
     return make_response("Failed", 400)
 
