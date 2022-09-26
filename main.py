@@ -67,14 +67,7 @@ def login():
         password = request.form["pass"]
         df = db.users.find_one({"email":uemail,"password":password})
         if df is not None:
-            session['loggedin'] = True
-            session['uemail'] = df["email"]
-            return make_response("OK", 200)
-        else :
-            #flash("User Not Found")
-            return make_response("Failed", 400)
-    if 'loggedin' in session:
-        return make_response(password, 200)
+            return make_response("ok", 200)
     return make_response("Failed", 400)
 
 @app.route('/logout')
@@ -83,18 +76,20 @@ def logout() :
 	session.pop('loggedin', None)
 	return make_response("OK", 200)
 
-@app.route('/profile', methods = ['GET'])
+@app.route('/profile', methods = ['GET','POST'])
 def profile():
-    if 'loggedin' in session:
-        df = db.users.find_one({"email":session["uemail"]},{'_id': 0}) 
-    # pil_img = Image.open(io.BytesIO(df['image']))
+    if request.method == 'POST' and db is not None:
+        uemail = request.form["email"]
+        df = db.users.find_one({"email":uemail},{'_id': 0}) 
+    #img=db.image.find_one({"email":session["uemail"]})
+    #pil_img = Image.open(io.BytesIO(img['image']))
     # plt.imshow(pil_img)
     # plt.show()
 
         # df[email]=email of user
         # df[username]=name of user
         #profileImage = imageStore.get_last_version(session['uemail']).read() # profileImage of user
-    return df
+        return df
     #return make_response("Failed", 400)
 
 @app.route('/update', methods = ['GET', 'POST'])
@@ -123,7 +118,7 @@ def update():
 
 @app.route('/delete', methods = ['GET', 'POST'])
 def delete():
-    if request.method == 'POST' and 'loggedin' in session:
+    if request.method == 'POST' and db is not None:
         uemail = request.form["email"]
         db.users.delete_one({"email":uemail})
         return make_response("OK", 200)
