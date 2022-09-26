@@ -3,9 +3,11 @@ from flask import Flask, render_template, request, session, flash, redirect, url
 import pymongo
 import certifi
 import gridfs
+from flask_cors import CORS
 from tkinter import Grid
 
 app = Flask(__name__)
+CORS(app)
 app.secret_key = 'InternshipProject'
 
 ca = certifi.where()
@@ -30,18 +32,19 @@ def updateImage():
 @app.route("/register", methods = ['GET', 'POST'])
 def register():
     if request.method == 'POST':
-        uname = request.form["name"]
-        uemail = request.form["email"]
-        password = request.form["pass"]
-        phone = request.form["phone"]
-        bio = request.form["bio"]
-        profileImage = request.files["image"]
+        uname = request.form.get("name")
+        uemail = request.form.get("email")
+        password = request.form.get("pass")
+        phone = request.form.get("phone")
+        bio = request.form.get("bio")
+        profileImage = request.files.get("image")
         if(len(list(db.users.find({"email":uemail}))) > 0):
             return make_response("Failed", 400)
         else:
-            with open(profileImage, 'rb') as img:
-                content = img.read()
-            imageStore.put(content, filename = uemail)
+            if profileImage:
+                with open(profileImage, 'rb') as img:
+                    content = img.read()
+                imageStore.put(content, filename = uemail)
             db.users.insert_one({"username":uname, "email":uemail, "password":password, "phone":phone , "bio":bio})
             return make_response("OK", 200)
     if 'loggedin' in session:
@@ -51,8 +54,8 @@ def register():
 @app.route("/login", methods = ['GET', 'POST'])
 def login():
     if request.method == 'POST':
-        uemail = request.form["email"]
-        password = request.form["pass"]
+        uemail = request.form.get("email")
+        password = request.form.get("pass")
         df = db.users.find_one({"email":uemail,"password":password})
         if df is not None:
             session['loggedin'] = True
