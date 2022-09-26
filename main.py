@@ -1,8 +1,9 @@
-from tkinter import Grid
+
 from flask import Flask, render_template, request, session, flash, redirect, url_for, make_response
 import pymongo
 import certifi
 import gridfs
+from tkinter import Grid
 
 app = Flask(__name__)
 app.secret_key = 'InternshipProject'
@@ -28,19 +29,22 @@ def updateImage():
 @app.route("/register", methods = ['GET', 'POST'])
 def register():
     if request.method == 'POST':
-        uname = request.form["[--uname--]"]
-        uemail = request.form["[--email--]"]
-        password = request.form["[--pass--]"]
-        profileImage = request.files["[--image--]"]
+        uname = request.form["name"]
+        uemail = request.form["email"]
+        password = request.form["pass"]
+        phone = request.form["phone"]
+        bio = request.form["bio"]
+        #profileImage = request.files["image"]
         if(len(list(db.users.find({"email":uemail}))) > 0):
             flash("User Already Exists")
             return make_response("Failed", 400)
         else:
-            with open(profileImage, 'rb') as img:
-                content = img.read()
-            imageStore.put(content, filename = uemail)
-            db.users.insert_one({"username":uname, "email":uemail, "password":password})
-            return make_response("OK", 200)    
+            #with open(profileImage, 'rb') as img:
+            #    content = img.read()
+            #imageStore.put(content, filename = uemail)
+            db.users.insert_one({"username":uname, "email":uemail, "password":password, "phone":phone , "bio":bio})
+            return make_response("OK", 200)
+    return make_response("Failed", 400)    
 
 @app.route("/login", methods = ['GET', 'POST'])
 def login():
@@ -53,7 +57,7 @@ def login():
             session['uemail'] = df["email"]
             return make_response("OK", 200)
         else :
-            flash("User Not Found")
+            #flash("User Not Found")
             return make_response("Failed", 400)
     if 'loggedin' in session:
         return make_response("OK", 200)
@@ -82,18 +86,21 @@ def update():
             uname = request.form["[--uname--]"]
             uemail = request.form["[--email--]"]
             password = request.form["[--pass--]"]
+            phone = request.form["[--phone--]"]
+            bio = request.form["[--bio--]"]
             profileImage = request.files["[--image--]"]
             with open(profileImage, 'rb') as img:
                 content = img.read()
             imageStore.put(content, filename = uemail)
-            db.users.update_one({"email":session['uemail']},{"$set":{"username":uname, "email":uemail, "password":password}})
+            db.users.update_one({"email":session['uemail']},{"$set":{"username":uname, "email":uemail, "password":password,"phone":phone , "bio":bio}})
             return make_response("OK", 200)
     return make_response("Failed", 400)
 
 
 @app.route("/")
 def index():
-    return render_template('index.html')
+    return 
+    #return render_template('index.html')
 
 if __name__ == '__main__':
     app.run(debug = True)
