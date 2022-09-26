@@ -85,8 +85,8 @@ def logout() :
 
 @app.route('/profile', methods = ['GET'])
 def profile():
-    #if 'loggedin' in session:
-    df = db.users.find_one({"email":session["uemail"]},{'_id': 0}) 
+    if 'loggedin' in session:
+        df = db.users.find_one({"email":session["uemail"]},{'_id': 0}) 
     # pil_img = Image.open(io.BytesIO(df['image']))
     # plt.imshow(pil_img)
     # plt.show()
