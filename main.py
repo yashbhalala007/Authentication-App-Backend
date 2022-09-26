@@ -54,6 +54,7 @@ def register():
             #    content = img.read()
             #imageStore.put(content, filename = uemail)
             db.users.insert_one({"username":uname, "email":uemail, "password":password, "phone":phone})
+            db.image.insert_one({"email":uemail})
             return make_response("OK", 200)
     if 'loggedin' in session:
         return make_response("OK", 200)
@@ -85,7 +86,7 @@ def logout() :
 @app.route('/profile', methods = ['GET'])
 def profile():
     #if 'loggedin' in session:
-    df = db.users.find_one({"email":"hetansh17@gmail.com"},{'_id': 0,'image':0}) 
+    df = db.users.find_one({"email":session["uemail"]},{'_id': 0}) 
     # pil_img = Image.open(io.BytesIO(df['image']))
     # plt.imshow(pil_img)
     # plt.show()
@@ -112,11 +113,11 @@ def update():
         image = {
             'data': image_bytes.getvalue()
         }
-
         #with open(profileImage, 'rb') as img:
             #   content = img.read()
         #imageStore.put(content, filename = uemail)
-        db.users.update_one({"email":uemail},{"$set":{"username":uname, "email":uemail, "password":password,"phone":phone , "bio":bio,"image":image["data"]}})
+        db.users.update_one({"email":uemail},{"$set":{"username":uname, "email":uemail, "password":password,"phone":phone , "bio":bio}})
+        db.image.update_one({"email":uemail},{"$set":{"email":uemail, "image":image['data']}})
         return make_response("OK", 200)
     return make_response("Failed", 400)
 
