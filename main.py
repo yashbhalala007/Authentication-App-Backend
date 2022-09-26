@@ -17,12 +17,13 @@ imageStore = gridfs.GridFS(db)
 
 @app.route("/updateImage", methods = ['GET', 'POST'])
 def updateImage():
-    if request.method == 'POST':
+    if request.method == 'POST' and 'loggedin' in session:
         profileImage = request.files["[--image--]"]
         with open(profileImage, 'rb') as img:
             content = img.read()
         imageStore.put(content, filename = session['uemail'])
         return make_response("OK", 200)
+    return make_response("Failed", 400)
 
 
 #to register the users
@@ -36,7 +37,6 @@ def register():
         bio = request.form["bio"]
         #profileImage = request.files["image"]
         if(len(list(db.users.find({"email":uemail}))) > 0):
-            flash("User Already Exists")
             return make_response("Failed", 400)
         else:
             #with open(profileImage, 'rb') as img:
@@ -44,6 +44,8 @@ def register():
             #imageStore.put(content, filename = uemail)
             db.users.insert_one({"username":uname, "email":uemail, "password":password, "phone":phone , "bio":bio})
             return make_response("OK", 200)
+    if 'loggedin' in session:
+        return make_response("OK", 200)
     return make_response("Failed", 400)    
 
 @app.route("/login", methods = ['GET', 'POST'])
